@@ -23,9 +23,39 @@ export ELASTICSEARCH_URL="https://your-cluster.es.cloud"
 export ELASTICSEARCH_API_KEY="your-api-key"
 ```
 
+## Required Privileges
+
+Most commands work with basic `read` privilege. Some commands require additional privileges:
+
+| Command | Required Privilege |
+|---------|-------------------|
+| `list`, `search`, `esql`, `kql` | `read` |
+| `get`, `aliases`, `datastreams` | `read`, `view_index_metadata` |
+
+Example role with full read access:
+
+```json
+{
+  "indices": [
+    {
+      "names": ["*"],
+      "privileges": ["read", "view_index_metadata"]
+    }
+  ]
+}
+```
+
 ## Usage
 
 ```bash
+# List datastreams
+es-cli datastreams
+es-cli datastreams '*audit*'
+
+# List aliases
+es-cli aliases
+es-cli aliases '*logs*'
+
 # List all indices
 es-cli list
 
@@ -47,6 +77,17 @@ Output is JSON on stdout, errors on stderr. Pipe to `jq` for formatting:
 ```bash
 es-cli list | jq '.[] | .index'
 es-cli search logs '{"query":{"match_all":{}},"size":1}' | jq '.hits.hits[0]._source'
+```
+
+### Human-readable output
+
+Use `-H` for formatted table output:
+
+```bash
+es-cli datastreams -H
+es-cli aliases -H
+es-cli list -H
+es-cli esql 'FROM logs | LIMIT 10' -H
 ```
 
 ## Examples

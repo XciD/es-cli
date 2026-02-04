@@ -26,6 +26,18 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// List index aliases (GET /_alias)
+    Aliases {
+        /// Optional pattern to filter aliases (supports wildcards, e.g., "*audit*")
+        pattern: Option<String>,
+    },
+
+    /// List datastreams (GET /_data_stream)
+    Datastreams {
+        /// Optional pattern to filter datastreams (supports wildcards, e.g., "*audit*")
+        pattern: Option<String>,
+    },
+
     /// List all indices (GET /_cat/indices?format=json)
     List,
 
@@ -72,6 +84,12 @@ async fn main() {
     let cli = Cli::parse();
 
     let result = match cli.command {
+        Commands::Aliases { pattern } => {
+            commands::aliases::run(pattern.as_deref(), cli.human).await
+        }
+        Commands::Datastreams { pattern } => {
+            commands::datastreams::run(pattern.as_deref(), cli.human).await
+        }
         Commands::List => commands::list::run(cli.human).await,
         Commands::Get { index } => commands::get::run(&index, cli.human).await,
         Commands::Search { index, query } => commands::search::run(&index, &query, cli.human).await,
