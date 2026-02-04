@@ -29,7 +29,7 @@ Most commands work with basic `read` privilege. Some commands require additional
 
 | Command | Required Privilege |
 |---------|-------------------|
-| `list`, `search`, `esql`, `kql`, `count`, `tail` | `read` |
+| `list`, `search`, `esql`, `kql`, `count`, `tail`, `values`, `stats`, `histogram` | `read` |
 | `get`, `fields`, `aliases`, `datastreams` | `read`, `view_index_metadata` |
 
 Example role with full read access:
@@ -100,6 +100,24 @@ es-cli datastreams -H
 es-cli aliases -H
 es-cli list -H
 es-cli esql 'FROM logs | LIMIT 10' -H
+```
+
+## Field Analysis
+
+```bash
+# Top values for a field (terms aggregation)
+es-cli values my-index status
+es-cli values my-index status -n 20        # Top 20 values
+es-cli values my-index status -n 20 -H     # Human-readable table
+
+# Statistics for a numeric field
+es-cli stats my-index response_time
+es-cli stats my-index response_time -H     # Human-readable output
+
+# Document counts over time (date histogram)
+es-cli histogram my-index
+es-cli histogram my-index -i 1d            # Daily buckets
+es-cli histogram my-index -f created_at -i 1h -H  # Custom field, hourly
 ```
 
 ## Examples

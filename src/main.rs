@@ -54,6 +54,20 @@ enum Commands {
         index: String,
     },
 
+    /// Show document counts over time (date histogram)
+    Histogram {
+        /// Index name or pattern
+        index: String,
+
+        /// Date field to aggregate (default: @timestamp)
+        #[arg(short = 'f', long, default_value = "@timestamp")]
+        field: String,
+
+        /// Time interval (e.g., "1h", "1d", "5m")
+        #[arg(short = 'i', long, default_value = "1h")]
+        interval: String,
+    },
+
     /// List all indices (GET /_cat/indices?format=json)
     List,
 
@@ -94,12 +108,34 @@ enum Commands {
         size: usize,
     },
 
+    /// Show statistics for a numeric field (min, max, avg, sum, std_dev)
+    Stats {
+        /// Index name or pattern
+        index: String,
+
+        /// Numeric field name
+        field: String,
+    },
+
     /// Show most recent documents from an index (sorted by @timestamp)
     Tail {
         /// Index name or pattern
         index: String,
 
         /// Number of documents to show
+        #[arg(short = 'n', long, default_value = "10")]
+        size: usize,
+    },
+
+    /// Show top unique values for a field (terms aggregation)
+    Values {
+        /// Index name or pattern
+        index: String,
+
+        /// Field name to aggregate
+        field: String,
+
+        /// Number of top values to show
         #[arg(short = 'n', long, default_value = "10")]
         size: usize,
     },
@@ -120,6 +156,11 @@ async fn main() {
             commands::datastreams::run(pattern.as_deref(), cli.human).await
         }
         Commands::Fields { index } => commands::fields::run(&index, cli.human).await,
+        Commands::Histogram {
+            index,
+            field,
+            interval,
+        } => commands::histogram::run(&index, &field, &interval, cli.human).await,
         Commands::List => commands::list::run(cli.human).await,
         Commands::Get { index } => commands::get::run(&index, cli.human).await,
         Commands::Search { index, query } => commands::search::run(&index, &query, cli.human).await,
@@ -127,7 +168,11 @@ async fn main() {
         Commands::Kql { index, query, size } => {
             commands::kql::run(&index, &query, size, cli.human).await
         }
+        Commands::Stats { index, field } => commands::stats::run(&index, &field, cli.human).await,
         Commands::Tail { index, size } => commands::tail::run(&index, size, cli.human).await,
+        Commands::Values { index, field, size } => {
+            commands::values::run(&index, &field, size, cli.human).await
+        }
     };
 
     if let Err(e) = result {
