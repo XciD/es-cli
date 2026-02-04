@@ -23,6 +23,28 @@ export ELASTICSEARCH_URL="https://your-cluster.es.cloud"
 export ELASTICSEARCH_API_KEY="your-api-key"
 ```
 
+## Required Privileges
+
+Most commands work with basic `read` privilege. Some commands require additional privileges:
+
+| Command | Required Privilege |
+|---------|-------------------|
+| `list`, `search`, `esql`, `kql` | `read` |
+| `get`, `aliases`, `datastreams` | `read`, `view_index_metadata` |
+
+Example role with full read access:
+
+```json
+{
+  "indices": [
+    {
+      "names": ["*"],
+      "privileges": ["read", "view_index_metadata"]
+    }
+  ]
+}
+```
+
 ## Usage
 
 ```bash
