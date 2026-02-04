@@ -62,6 +62,18 @@ es-cli list
 # Get mapping for an index
 es-cli get my-index
 
+# List fields and types for an index
+es-cli fields my-index
+es-cli fields my-index -H   # Human-readable table
+
+# Count documents
+es-cli count my-index
+es-cli count my-index '{"query":{"match":{"status":"error"}}}'
+
+# Show most recent documents (sorted by @timestamp)
+es-cli tail my-index
+es-cli tail my-index -n 20  # Last 20 documents
+
 # Search with query DSL
 es-cli search my-index '{"query":{"match_all":{}},"size":10}'
 

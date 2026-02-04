@@ -32,10 +32,26 @@ enum Commands {
         pattern: Option<String>,
     },
 
+    /// Count documents in an index (GET /<index>/_count)
+    Count {
+        /// Index name or pattern
+        index: String,
+
+        /// Optional query DSL as JSON (e.g., '{"query":{"match":{"status":"error"}}}')
+        #[arg(value_name = "JSON")]
+        query: Option<String>,
+    },
+
     /// List datastreams (GET /_data_stream)
     Datastreams {
         /// Optional pattern to filter datastreams (supports wildcards, e.g., "*audit*")
         pattern: Option<String>,
+    },
+
+    /// List fields and their types for an index (GET /<index>/_mapping)
+    Fields {
+        /// Index name or pattern
+        index: String,
     },
 
     /// List all indices (GET /_cat/indices?format=json)
@@ -77,6 +93,16 @@ enum Commands {
         #[arg(short = 'n', long, default_value = "10")]
         size: usize,
     },
+
+    /// Show most recent documents from an index (sorted by @timestamp)
+    Tail {
+        /// Index name or pattern
+        index: String,
+
+        /// Number of documents to show
+        #[arg(short = 'n', long, default_value = "10")]
+        size: usize,
+    },
 }
 
 #[tokio::main]
@@ -87,9 +113,13 @@ async fn main() {
         Commands::Aliases { pattern } => {
             commands::aliases::run(pattern.as_deref(), cli.human).await
         }
+        Commands::Count { index, query } => {
+            commands::count::run(&index, query.as_deref(), cli.human).await
+        }
         Commands::Datastreams { pattern } => {
             commands::datastreams::run(pattern.as_deref(), cli.human).await
         }
+        Commands::Fields { index } => commands::fields::run(&index, cli.human).await,
         Commands::List => commands::list::run(cli.human).await,
         Commands::Get { index } => commands::get::run(&index, cli.human).await,
         Commands::Search { index, query } => commands::search::run(&index, &query, cli.human).await,
@@ -97,6 +127,7 @@ async fn main() {
         Commands::Kql { index, query, size } => {
             commands::kql::run(&index, &query, size, cli.human).await
         }
+        Commands::Tail { index, size } => commands::tail::run(&index, size, cli.human).await,
     };
 
     if let Err(e) = result {
