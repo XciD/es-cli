@@ -106,6 +106,32 @@ enum Commands {
         /// Number of results to return
         #[arg(short = 'n', long, default_value = "10")]
         size: usize,
+
+        /// Sort by field (prefix with - for desc, + for asc; default desc)
+        /// Example: -@timestamp, +status
+        #[arg(short = 's', long)]
+        sort: Option<String>,
+
+        /// Fields to include in response (comma-separated)
+        /// Example: @timestamp,message,level
+        #[arg(short = 'f', long)]
+        fields: Option<String>,
+
+        /// Time filter: documents from last duration (e.g., "1h", "30m", "7d")
+        #[arg(long)]
+        since: Option<String>,
+
+        /// Time filter: start time (RFC3339 or Elasticsearch format)
+        #[arg(long)]
+        from: Option<String>,
+
+        /// Time filter: end time (RFC3339 or Elasticsearch format)
+        #[arg(long)]
+        to: Option<String>,
+
+        /// Timestamp field name for time filters (default: @timestamp)
+        #[arg(long, default_value = "@timestamp")]
+        timestamp_field: String,
     },
 
     /// Show statistics for a numeric field (min, max, avg, sum, std_dev)
@@ -165,8 +191,29 @@ async fn main() {
         Commands::Get { index } => commands::get::run(&index, cli.human).await,
         Commands::Search { index, query } => commands::search::run(&index, &query, cli.human).await,
         Commands::Esql { query } => commands::esql::run(&query, cli.human).await,
-        Commands::Kql { index, query, size } => {
-            commands::kql::run(&index, &query, size, cli.human).await
+        Commands::Kql {
+            index,
+            query,
+            size,
+            sort,
+            fields,
+            since,
+            from,
+            to,
+            timestamp_field,
+        } => {
+            let opts = commands::kql::KqlOptions {
+                index: &index,
+                query: &query,
+                size,
+                sort: sort.as_deref(),
+                fields: fields.as_deref(),
+                since: since.as_deref(),
+                from: from.as_deref(),
+                to: to.as_deref(),
+                timestamp_field: &timestamp_field,
+            };
+            commands::kql::run(opts, cli.human).await
         }
         Commands::Stats { index, field } => commands::stats::run(&index, &field, cli.human).await,
         Commands::Tail { index, size } => commands::tail::run(&index, size, cli.human).await,
