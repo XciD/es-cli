@@ -29,8 +29,8 @@ Most commands work with basic `read` privilege. Some commands require additional
 
 | Command | Required Privilege |
 |---------|-------------------|
-| `list`, `search`, `esql`, `kql` | `read` |
-| `get`, `aliases`, `datastreams` | `read`, `view_index_metadata` |
+| `list`, `search`, `esql`, `kql`, `count`, `tail` | `read` |
+| `get`, `fields`, `aliases`, `datastreams` | `read`, `view_index_metadata` |
 
 Example role with full read access:
 
@@ -61,6 +61,18 @@ es-cli list
 
 # Get mapping for an index
 es-cli get my-index
+
+# List fields and types for an index
+es-cli fields my-index
+es-cli fields my-index -H   # Human-readable table
+
+# Count documents
+es-cli count my-index
+es-cli count my-index '{"query":{"match":{"status":"error"}}}'
+
+# Show most recent documents (sorted by @timestamp)
+es-cli tail my-index
+es-cli tail my-index -n 20  # Last 20 documents
 
 # Search with query DSL
 es-cli search my-index '{"query":{"match_all":{}},"size":10}'

@@ -1,7 +1,10 @@
 pub mod aliases;
+pub mod count;
 pub mod datastreams;
 pub mod esql;
+pub mod fields;
 pub mod get;
 pub mod kql;
 pub mod list;
 pub mod search;
+pub mod tail;
