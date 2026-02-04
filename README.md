@@ -156,41 +156,19 @@ es-cli esql 'FROM logs | WHERE @timestamp >= NOW() - 1 hour | LIMIT 10'
 ## KQL/Lucene Examples
 
 ```bash
-# Simple field match
+# Basic queries
 es-cli kql logs 'status:error'
-
-# AND/OR operators
 es-cli kql logs 'status:error AND host:prod-*'
-es-cli kql logs 'status:error OR status:warning'
-
-# Wildcard
 es-cli kql logs 'message:*timeout*'
 
-# Range
-es-cli kql logs 'response_time:>1000'
-
-# Limit results
-es-cli kql logs 'status:error' -n 50
-
-# Sort by field (prefix with - for desc, + for asc, default is desc)
-es-cli kql logs 'status:error' --sort '@timestamp'
-es-cli kql logs 'status:error' --sort='-@timestamp'  # descending (most recent first)
-es-cli kql logs 'status:error' --sort='+@timestamp'  # ascending (oldest first)
-
-# Select specific fields (reduces output size)
-es-cli kql logs 'status:error' --fields '@timestamp,message,level'
+# Sort, filter fields, and limit results
+es-cli kql logs 'status:error' -n 50 --sort '-@timestamp' --fields '@timestamp,message'
 
 # Time filters
-es-cli kql logs 'status:error' --since 1h              # Last hour
-es-cli kql logs 'status:error' --since 30m             # Last 30 minutes
-es-cli kql logs 'status:error' --since 7d              # Last 7 days
+es-cli kql logs 'status:error' --since 1h
 es-cli kql logs 'status:error' --from '2024-01-01T00:00:00Z' --to '2024-01-02T00:00:00Z'
 
-# Combine options
-es-cli kql logs 'status:error' --since 1h --sort '@timestamp' --fields '@timestamp,message' -n 100
-
-# Search with special characters (e.g., paths with /)
-# Uses simple_query_string internally, so special chars work without escaping
+# Special characters work without escaping (uses simple_query_string)
 es-cli kql audit 'owner/repo-name'
 ```
 
