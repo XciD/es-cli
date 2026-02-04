@@ -17,9 +17,21 @@ pub fn format_output(json: &str, human: bool) -> String {
     } else if let Some(hits) = value.get("hits") {
         // Search response
         format_search(hits)
+    } else if let Some(data_streams) = value.get("data_streams") {
+        // Datastreams response
+        format_datastreams(data_streams)
     } else if value.is_array() {
         // List indices response
         format_list(&value)
+    } else if value.is_object() && !value.as_object().unwrap().is_empty() {
+        // Check if it looks like an aliases response (index -> aliases mapping)
+        if let Some(first_val) = value.as_object().unwrap().values().next() {
+            if first_val.get("aliases").is_some() {
+                return format_aliases(&value);
+            }
+        }
+        // Pretty print JSON for other responses
+        serde_json::to_string_pretty(&value).unwrap_or_else(|_| json.to_string())
     } else {
         // Pretty print JSON for other responses
         serde_json::to_string_pretty(&value).unwrap_or_else(|_| json.to_string())
@@ -64,10 +76,7 @@ fn format_search(hits: &Value) -> String {
 
     // Total hits
     if let Some(total) = hits.get("total") {
-        let count = total
-            .get("value")
-            .and_then(|v| v.as_u64())
-            .unwrap_or(0);
+        let count = total.get("value").and_then(|v| v.as_u64()).unwrap_or(0);
         let relation = total
             .get("relation")
             .and_then(|r| r.as_str())
@@ -133,10 +142,7 @@ fn format_list(value: &Value) -> String {
 
     if let Some(indices) = value.as_array() {
         for idx in indices {
-            let name = idx
-                .get("index")
-                .and_then(|v| v.as_str())
-                .unwrap_or("-");
+            let name = idx.get("index").and_then(|v| v.as_str()).unwrap_or("-");
             let docs = idx
                 .get("docs.count")
                 .and_then(|v| v.as_str())
@@ -145,10 +151,7 @@ fn format_list(value: &Value) -> String {
                 .get("store.size")
                 .and_then(|v| v.as_str())
                 .unwrap_or("-");
-            let status = idx
-                .get("health")
-                .and_then(|v| v.as_str())
-                .unwrap_or("-");
+            let status = idx.get("health").and_then(|v| v.as_str()).unwrap_or("-");
 
             output.push_str(&format!(
                 "{:<50} {:>12} {:>12} {:>10}\n",
@@ -193,4 +196,72 @@ fn truncate(s: &str, max: usize) -> String {
     } else {
         format!("{}...", &s[..max - 3])
     }
+}
+
+fn format_aliases(value: &Value) -> String {
+    let mut output = String::new();
+    output.push_str(&format!("{:<40} {:<50}\n", "ALIAS", "INDEX"));
+    output.push_str(&"-".repeat(92));
+    output.push('\n');
+
+    // Collect and sort aliases
+    let mut alias_index_pairs: Vec<(&str, &str)> = Vec::new();
+
+    if let Some(obj) = value.as_object() {
+        for (index, index_data) in obj {
+            if let Some(aliases) = index_data.get("aliases").and_then(|a| a.as_object()) {
+                for alias in aliases.keys() {
+                    alias_index_pairs.push((alias.as_str(), index.as_str()));
+                }
+            }
+        }
+    }
+
+    alias_index_pairs.sort_by(|a, b| a.0.cmp(b.0).then(a.1.cmp(b.1)));
+
+    for (alias, index) in alias_index_pairs {
+        output.push_str(&format!(
+            "{:<40} {:<50}\n",
+            truncate(alias, 40),
+            truncate(index, 50)
+        ));
+    }
+
+    output
+}
+
+fn format_datastreams(data_streams: &Value) -> String {
+    let mut output = String::new();
+    output.push_str(&format!(
+        "{:<50} {:>10} {:>10} {:<30}\n",
+        "NAME", "INDICES", "STATUS", "TEMPLATE"
+    ));
+    output.push_str(&"-".repeat(105));
+    output.push('\n');
+
+    if let Some(streams) = data_streams.as_array() {
+        for stream in streams {
+            let name = stream.get("name").and_then(|v| v.as_str()).unwrap_or("-");
+            let indices_count = stream
+                .get("indices")
+                .and_then(|v| v.as_array())
+                .map(|arr| arr.len())
+                .unwrap_or(0);
+            let status = stream.get("status").and_then(|v| v.as_str()).unwrap_or("-");
+            let template = stream
+                .get("template")
+                .and_then(|v| v.as_str())
+                .unwrap_or("-");
+
+            output.push_str(&format!(
+                "{:<50} {:>10} {:>10} {:<30}\n",
+                truncate(name, 50),
+                indices_count,
+                status,
+                truncate(template, 30)
+            ));
+        }
+    }
+
+    output
 }

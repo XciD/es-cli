@@ -9,10 +9,9 @@ pub struct EsClient {
 
 impl EsClient {
     pub fn new() -> Result<Self, String> {
-        let base_url = env::var("ELASTICSEARCH_URL")
-            .map_err(|_| "ELASTICSEARCH_URL not set")?;
-        let api_key = env::var("ELASTICSEARCH_API_KEY")
-            .map_err(|_| "ELASTICSEARCH_API_KEY not set")?;
+        let base_url = env::var("ELASTICSEARCH_URL").map_err(|_| "ELASTICSEARCH_URL not set")?;
+        let api_key =
+            env::var("ELASTICSEARCH_API_KEY").map_err(|_| "ELASTICSEARCH_API_KEY not set")?;
 
         let client = Client::new();
 
