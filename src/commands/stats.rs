@@ -56,26 +56,22 @@ fn format_stats_human(json: &str) -> String {
         output.push_str(&format!(
             "{:<20} {}\n",
             "Min:",
-            min.map(format_number)
-                .unwrap_or_else(|| "-".to_string())
+            min.map(format_number).unwrap_or_else(|| "-".to_string())
         ));
         output.push_str(&format!(
             "{:<20} {}\n",
             "Max:",
-            max.map(format_number)
-                .unwrap_or_else(|| "-".to_string())
+            max.map(format_number).unwrap_or_else(|| "-".to_string())
         ));
         output.push_str(&format!(
             "{:<20} {}\n",
             "Average:",
-            avg.map(format_number)
-                .unwrap_or_else(|| "-".to_string())
+            avg.map(format_number).unwrap_or_else(|| "-".to_string())
         ));
         output.push_str(&format!(
             "{:<20} {}\n",
             "Sum:",
-            sum.map(format_number)
-                .unwrap_or_else(|| "-".to_string())
+            sum.map(format_number).unwrap_or_else(|| "-".to_string())
         ));
         output.push_str(&format!(
             "{:<20} {}\n",
