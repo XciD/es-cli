@@ -109,7 +109,7 @@ enum Commands {
 
         /// Sort by field (prefix with - for desc, + for asc; default desc)
         /// Example: -@timestamp, +status
-        #[arg(short = 's', long)]
+        #[arg(short = 's', long, allow_hyphen_values = true)]
         sort: Option<String>,
 
         /// Fields to include in response (comma-separated)
