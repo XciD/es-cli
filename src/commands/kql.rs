@@ -19,11 +19,16 @@ pub async fn run(opts: KqlOptions<'_>, human: bool) -> Result<(), String> {
     let client = EsClient::new()?;
     let path = format!("/{}/_search", opts.index);
 
-    // Build the query - use simple_query_string to avoid escaping issues with special chars like /
+    // Build the query using query_string which respects field mappings better than
+    // simple_query_string (e.g. keyword fields, wildcards, NOT operator).
+    // lenient=true prevents errors on type mismatches, analyze_wildcard enables
+    // wildcard expansion on analyzed fields.
     let query_clause = json!({
-        "simple_query_string": {
+        "query_string": {
             "query": opts.query,
-            "default_operator": "AND"
+            "default_operator": "AND",
+            "lenient": true,
+            "analyze_wildcard": true
         }
     });
 
