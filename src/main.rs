@@ -12,7 +12,8 @@ use clap::{Parser, Subcommand};
     long_about = "A minimal CLI to interact with Elasticsearch.\n\n\
                   Requires environment variables:\n  \
                   - ELASTICSEARCH_URL: Cluster URL\n  \
-                  - ELASTICSEARCH_API_KEY: API key for authentication\n\n\
+                  - ELASTIC_API_KEY or ELASTICSEARCH_API_KEY: API key for authentication (preferred)\n  \
+                  - ELASTIC_USERNAME + ELASTIC_PASSWORD: Basic auth (used if no API key is set)\n\n\
                   Output is JSON on stdout, errors on stderr."
 )]
 struct Cli {
