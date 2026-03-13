@@ -4,11 +4,13 @@ Minimal CLI for Elasticsearch.
 
 ## Installation
 
+### Homebrew
+
 ```bash
-cargo install --path .
+brew install XciD/tap/es-cli
 ```
 
-Or from GitHub:
+### From source
 
 ```bash
 cargo install --git https://github.com/XciD/es-cli
