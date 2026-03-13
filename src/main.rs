@@ -43,6 +43,7 @@ enum Commands {
     },
 
     /// List datastreams (GET /_data_stream)
+    #[command(alias = "data-streams")]
     Datastreams {
         /// Optional pattern to filter datastreams (supports wildcards, e.g., "*audit*")
         pattern: Option<String>,
@@ -69,9 +70,11 @@ enum Commands {
     },
 
     /// List all indices (GET /_cat/indices?format=json)
+    #[command(alias = "indices")]
     List,
 
     /// Get mapping for an index (GET /<index>/_mapping)
+    #[command(alias = "mapping")]
     Get {
         /// Index name or pattern (e.g., "my-index" or "logs-*")
         index: String,
@@ -95,7 +98,7 @@ enum Commands {
     },
 
     /// Search with KQL/Lucene query string syntax
-    #[command(name = "kql")]
+    #[command(name = "kql", alias = "query")]
     Kql {
         /// Index name or pattern to search
         index: String,
@@ -154,6 +157,7 @@ enum Commands {
     },
 
     /// Show top unique values for a field (terms aggregation)
+    #[command(alias = "top-values")]
     Values {
         /// Index name or pattern
         index: String,
